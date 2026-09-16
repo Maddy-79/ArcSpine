@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="Arc-Spine smart posture monitoring companion app">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <title>Arc-Spine — Posture Companion</title>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><div class="brand-mark">B</div><div><strong>Arc-Spine</strong><span>Posture Companion</span></div></div>
+      <nav>
+        <button class="nav-btn active" data-view="dashboard">⌂ <span>Dashboard</span></button>
+        <button class="nav-btn" data-view="analytics">◫ <span>Analytics</span></button>
+        <button class="nav-btn" data-view="history">◷ <span>History</span></button>
+        <button class="nav-btn" data-view="device">⌁ <span>Device</span></button>
+        <button class="nav-btn" data-view="settings">⚙ <span>Settings</span></button>
+      </nav>
+      <div class="side-footer">ESP32 • MPU6050<br>Wi‑Fi ready</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn mobile-only" id="menuBtn">☰</button>
+        <div><h1 id="pageTitle">Dashboard</h1><p id="connectionLine">Device not connected</p></div>
+        <div class="top-actions">
+          <button class="secondary" id="calibrateBtn">Recalibrate</button>
+          <button class="primary" id="connectBtn">Connect device</button>
+        </div>
+      </header>
+
+      <section class="view active" id="dashboard">
+        <div class="hero-status good" id="statusCard">
+          <div>
+            <span class="eyebrow">LIVE POSTURE</span>
+            <h2 id="statusText">POSTURE OPTIMAL</h2>
+            <p id="statusHint">Connect your Arc-Spine device to begin live monitoring.</p>
+          </div>
+          <div class="posture-ring" id="ring"><span id="ringValue">0°</span><small>deviation</small></div>
+        </div>
+
+        <div class="metrics-grid">
+          <article class="metric"><span>Posture score</span><strong id="score">—</strong><small>Current session</small></article>
+          <article class="metric"><span>Live deviation</span><strong id="dev">0.0°</strong><small>From your baseline</small></article>
+          <article class="metric"><span>Correct time</span><strong id="correct">0s</strong><small>Current session</small></article>
+          <article class="metric"><span>Incorrect time</span><strong id="incorrect">0s</strong><small>Current session</small></article>
+          <article class="metric"><span>Slouch alerts</span><strong id="alerts">0</strong><small>Haptic/phone alerts</small></article>
+          <article class="metric"><span>Best streak</span><strong id="streak">0s</strong><small>Continuous good posture</small></article>
+        </div>
+
+        <div class="two-col">
+          <article class="panel">
+            <div class="panel-head"><div><h3>Posture trend</h3><p>Live deviation over the current session</p></div><span class="live-dot">● LIVE</span></div>
+            <canvas id="angleChart" height="230"></canvas>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><h3>Today</h3><p>Time distribution</p></div></div>
+            <div class="donut-wrap"><canvas id="timeChart" width="180" height="180"></canvas><div><strong id="todayScore">—</strong><span>posture score</span></div></div>
+            <div class="legend"><span><i class="good-dot"></i>Correct <b id="correctPct">0%</b></span><span><i class="bad-dot"></i>Needs correction <b id="badPct">0%</b></span></div>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="panel-head"><div><h3>Recent posture events</h3><p>Latest alerts and recoveries from this session</p></div><button class="text-btn" id="clearEvents">Clear</button></div>
+          <div id="events" class="events empty">No events yet.</div>
+        </article>
+      </section>
+
+      <section class="view" id="analytics">
+        <div class="section-title"><h2>Analytics</h2><p>Understand how your posture changes during a session.</p></div>
+        <div class="metrics-grid">
+          <article class="metric"><span>Average deviation</span><strong id="avg">0.0°</strong><small>Session samples</small></article>
+          <article class="metric"><span>Median deviation</span><strong id="median">0.0°</strong><small>Session samples</small></article>
+          <article class="metric"><span>Maximum deviation</span><strong id="maxDev">0.0°</strong><small>Session samples</small></article>
+          <article class="metric"><span>Samples received</span><strong id="samples">0</strong><small>BLE/Wi‑Fi telemetry</small></article>
+        </div>
+        <div class="panel"><div class="panel-head"><div><h3>7-day posture performance</h3><p>Saved locally on this device</p></div></div><canvas id="weekChart" height="250"></canvas></div>
+        <div class="panel"><div class="panel-head"><div><h3>Interpretation</h3><p>Use these numbers to track improvement, not as a medical diagnosis.</p></div></div>
+          <div class="insight" id="insight">Connect the wearable and complete a session to generate insights.</div>
+        </div>
+      </section>
+
+      <section class="view" id="history">
+        <div class="section-title"><h2>Session history</h2><p>Your saved posture sessions stay in this browser.</p></div>
+        <div class="panel"><div class="history-list" id="historyList"><div class="empty">No completed sessions yet.</div></div></div>
+      </section>
+
+      <section class="view" id="device">
+        <div class="section-title"><h2>Device</h2><p>Connect, calibrate and verify the wearable.</p></div>
+        <div class="device-grid">
+          <article class="panel device-card"><div class="device-icon">⌁</div><h3 id="deviceName">Arc-Spine-Wearable</h3><p id="deviceState">Not connected</p><div class="device-row"><span>Transport</span><b id="transport">—</b></div><div class="device-row"><span>Telemetry</span><b id="telemetry">Waiting</b></div><button class="primary wide" id="deviceConnect">Connect with Wi‑Fi</button></article>
+          <article class="panel"><h3>Wi‑Fi / WebSocket</h3><p class="muted">Use this when the ESP32 is on the same network as the phone.</p><label>ESP32 WebSocket URL<input id="wsUrl" placeholder="ws://192.168.4.1:81"></label><button class="secondary wide" id="wsConnect">Connect over Wi‑Fi</button><div class="connection-help">For a simple demo, the included firmware can create its own Wi‑Fi access point.</div></article>
+          <article class="panel"><h3>Calibration</h3><p>Wear the device in its final position, sit/stand naturally upright, then hold still during calibration. You can re-run this at any time — even mid-session — to re-zero the baseline to your current position.</p><div class="calibration-box"><strong id="baseline">Baseline: —</strong><span id="calStatus">Not calibrated in this session</span></div><button class="secondary wide" id="calibrateDevice">Recalibrate (3 s)</button></article>
+        </div>
+      </section>
+
+      <section class="view" id="settings">
+        <div class="section-title"><h2>Settings</h2><p>Personalize feedback and local data.</p></div>
+        <div class="settings-grid">
+          <article class="panel"><h3>Posture sensitivity</h3><label>Warning angle <output id="angleOut">15°</output><input type="range" id="angleRange" min="8" max="30" value="15"></label><label>Safe zone (± tolerance) <output id="safeZoneOut">±4°</output><input type="range" id="safeZoneRange" min="0" max="10" value="4"></label><label>Buzz duration <output id="delayOut">5 s</output><input type="range" id="delayRange" min="1" max="10" value="5"></label><p class="muted">Posture status flips the instant you cross the warning angle — safe zone just keeps small natural sway from triggering an alert, with no extra waiting period. Buzz duration is how long the vibration motor pulses, once, when a strain is detected — it stops on its own and won't buzz again until you're back to OK and slouch again. Both settings are sent to the ESP32 so the vibration motor and the app agree.</p></article>
+          <article class="panel"><h3>Notifications &amp; buzzer</h3><label class="switch-row"><span>Browser alert on slouch</span><input type="checkbox" id="notifyToggle" checked><i></i></label><label class="switch-row"><span>Sound on alert</span><input type="checkbox" id="soundToggle"><i></i></label><label class="switch-row"><span>Vibration motor (buzzer)</span><input type="checkbox" id="buzzerToggle" checked><i></i></label><p class="muted">Turn the buzzer off if the vibration gets annoying — the browser notification alone will still remind you.</p></article>
+          <article class="panel danger"><h3>Local data</h3><p>Session history and settings are stored locally in this browser.</p><button class="danger-btn" id="resetData">Delete local history</button></article>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
